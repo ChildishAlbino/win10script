@@ -161,10 +161,12 @@ $tweaks = @(
 	### Unpinning ###
 	"UnpinStartMenuTiles",
 	#"UnpinTaskbarIcons",
+	
+	### Clear Windows 10 Start Menu ###
+	"ClearStartMenu",
 
 	### Auxiliary Functions ###
-	"WaitForKey"
-	"Restart"
+	"Apply-Changes"
 )
 
 #########
@@ -2414,6 +2416,31 @@ Function UnpinTaskbarIcons {
 }
 
 
+# Clear the Start Menu
+Function ClearStartMenu {
+    If ($ClearStart) {
+		Write-Host "***Setting empty start menu for new profiles...***"
+#Don't edit this. Creates empty start menu if -ClearStart is used.
+        $StartLayoutStr = @"
+<LayoutModificationTemplate Version="1" xmlns="http://schemas.microsoft.com/Start/2014/LayoutModification" xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout" xmlns:start="http://schemas.microsoft.com/Start/2014/StartLayout" xmlns:taskbar="http://schemas.microsoft.com/Start/2014/TaskbarLayout">
+  <LayoutOptions StartTileGroupCellWidth="6" />
+  <DefaultLayoutOverride>
+    <StartLayoutCollection>
+      <defaultlayout:StartLayout GroupCellWidth="6" xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout">
+      </defaultlayout:StartLayout>
+    </StartLayoutCollection>
+  </DefaultLayoutOverride>
+  </LayoutModificationTemplate>
+"@
+	    add-content $Env:TEMP\startlayout.xml $Global:StartLayoutStr
+        import-startlayout -layoutpath $Env:TEMP\startlayout.xml -mountpath $Env:SYSTEMDRIVE\
+        remove-item $Env:TEMP\startlayout.xml
+}    Else {        
+		Write-Host "***Setting clean start menu for new profiles...***"
+}
+}
+
+
 
 ##########
 # Auxiliary Functions
@@ -2427,16 +2454,14 @@ Function RequireAdmin {
 	}
 }
 
-# Wait for key press
-Function WaitForKey {
-	Write-Output "Press any key to continue..."
-	[Console]::ReadKey($true) | Out-Null
-}
-
-# Restart computer
-Function Restart {
-	Write-Output "Restarting..."
-	Restart-Computer
+# Press Y to Restart Computer and Apply Changes
+Function Apply-Changes {
+$response = Read-Host "Press Y to restart computer and apply changes (Y/N)"
+    if ($response -eq "Y" ) {
+        start shutdown -ArgumentList "/r /t 0"
+    } else {
+        exit
+    }
 }
 
 ###########
