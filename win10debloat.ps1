@@ -1,6 +1,6 @@
 ##########
 #
-#     > powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://git.io/JJ525')"
+#     powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('https://git.io/JJ525')"
 #
 ##########
 # Default preset
